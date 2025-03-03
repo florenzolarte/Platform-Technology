@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Program</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.14.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.14.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      background-size: 400% 400%;
+      animation: gradient-bg 15s ease infinite;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    @keyframes gradient-bg {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    #root {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .survey-container {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0, 121, 68, 0.2);
+      padding: 30px;
+      margin-top: 20px;
+      transform: translateY(0);
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    
+    p {
+      color: #388e3c;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 18px;
+    }
+    
+    .score-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 25px 0;
+    }
+    
+    .score-btn {
+      background: linear-gradient(145deg, #4caf50, #66bb6a);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .score-btn:hover {
+      transform: translateY(-5px) scale(1.1);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    }
+    
+    .score-btn:active {
+      transform: translateY(2px);
+    }
+    
+    h2 {
+      color: #2e7d32;
+      margin: 25px 0 15px;
+      border-bottom: 2px solid #a5d6a7;
+      padding-bottom: 10px;
+    }
+    
+    ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    li {
+      background-color: #e8f5e9;
+      border-radius: 8px;
+      padding: 10px 15px;
+      color: #2e7d32;
+      border-left: 4px solid #4caf50;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      animation: fade-in 0.5s ease-out;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .emoji {
+      font-size: 50px;
+      text-align: center;
+      margin: 20px 0;
+      animation: bounce 1s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fade-in 0.3s ease-out;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: linear-gradient(to bottom right, #f1f8e9, #ffffff);
+      border-radius: 15px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      animation: scale-in 0.3s ease-out;
+    }
+    
+    @keyframes scale-in {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .modal h3 {
+      color: #2e7d32;
+      margin-bottom: 15px;
+      font-size: 24px;
+    }
+    
+    .close-btn {
+      background: linear-gradient(145deg, #4caf50, #66bb6a);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 25px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .close-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+      .survey-container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .score-buttons {
+        gap: 10px;
+      }
+      
+      .score-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .score-buttons {
+        gap: 8px;
+      }
+      
+      .score-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    function SurveyProgram() {
+      const [scores, setScores] = React.useState([]);
+      const [showModal, setShowModal] = React.useState(false);
+      const [ratingHover, setRatingHover] = React.useState(null);
+      
+      const handleScoreClick = (score) => {
+        if (score === 5) {
+          setShowModal(true);
+        }
+        setScores((prevScores) => [...prevScores, score]);
+      };
+      
+      const handleCloseModal = () => {
+        setShowModal(false);
+      };
+      
+      return (
+        <div className="survey-container">
+          <h1>Telephone Company Provider Survey</h1>
+          <p>Rate your satisfaction with the service:</p>
+          <div className="score-buttons">
+            {[1, 2, 3, 4, 5].map((score) => (
+              <button 
+                key={score}
+                className="score-btn" 
+                onClick={() => handleScoreClick(score)}
+                onMouseEnter={() => setRatingHover(score)}
+                onMouseLeave={() => setRatingHover(null)}
+                style={ratingHover === score ? {transform: 'translateY(-5px) scale(1.1)'} : {}}
+              >
+                {score}
+              </button>
+            ))}
+          </div>
+          
+          <h2>Scores:</h2>
+          {scores.length === 0 ? (
+            <p>No scores yet.</p>
+          ) : (
+            <ul>
+              {scores.map((score, index) => (
+                <li key={index}>Score: {score}</li>
+              ))}
+            </ul>
+          )}
+          
+          {scores.includes(5) && (
+            <div className="emoji">
+              <span role="img" aria-label="Party emoji">🎉</span>
+            </div>
+          )}
+          
+          {showModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h3>Thank you!</h3>
+                <p>Your feedback is greatly appreciated.</p>
+                <p>We're thrilled you had an excellent experience!</p>
+                <button className="close-btn" onClick={handleCloseModal}>Close</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    ReactDOM.render(
+      <React.StrictMode>
+        <SurveyProgram />
+      </React.StrictMode>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
