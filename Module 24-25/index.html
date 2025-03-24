@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--Olarte, Florenz-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f5f9f5; 
+            color: #2e5a2e; 
+            font-family: 'Poppins', Arial, sans-serif;
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1a3a1a;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            grid-column: 2;
+            grid-row: 1 / span 2;
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #locationInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #4CAF50;
+            border-radius: 6px 0 0 6px;
+            background-color: white;
+            color: #2e5a2e;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        #locationInput:focus {
+            outline: none;
+            border-color: #388e3c;
+        }
+
+        #addLocationButton {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        #addLocationButton:hover {
+            background-color: #388e3c;
+        }
+
+        .locations-container {
+            margin-top: 20px;
+        }
+
+        .locations-title {
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #1a3a1a;
+            font-size: 16px;
+        }
+
+        #locationsList {
+            list-style-type: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #locationsList li {
+            padding: 12px 15px;
+            background-color: #e8f5e9;
+            color: #2e5a2e;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 4px solid #4CAF50;
+        }
+
+        #locationsList li:hover {
+            background-color: #c8e6c9;
+            transform: translateX(5px);
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            #map {
+                grid-column: 1;
+                grid-row: 2;
+                height: 350px;
+            }
+            
+            .sidebar {
+                grid-row: 1;
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Location Map</h1>
+    
+    <div class="container">
+        <div class="sidebar">
+            <!-- Input and Button -->
+            <div class="input-group">
+                <input type="text" id="locationInput" placeholder="Enter a location">
+                <button id="addLocationButton">Add</button>
+            </div>
+            
+            <!-- Locations List -->
+            <div class="locations-container">
+                <h3 class="locations-title">Saved Locations</h3>
+                <ul id="locationsList"></ul>
+            </div>
+        </div>
+        
+        <!-- Map Container -->
+        <div id="map"></div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 Interactive Location Map | Created by Florenz Olarte</p>
+    </div>
+
+    <!-- Leaflet.js Library -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // JavaScript Code
+        const locationInput = document.getElementById("locationInput");
+        const addLocationButton = document.getElementById("addLocationButton");
+        const locationsList = document.getElementById("locationsList");
+
+        let locationsArray = [];
+        let map;
+        let markers = [];
+
+        // Initialize map on page load
+        document.addEventListener('DOMContentLoaded', initMap);
+
+        function initMap() {
+            map = L.map("map").setView([13.41, 122.56], 5);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+                maxZoom: 18,
+            }).addTo(map);
+        }
+
+        // Event Listener for Adding Location
+        addLocationButton.addEventListener("click", addLocation);
+        
+        // Add location when Enter key is pressed
+        locationInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                addLocation();
+            }
+        });
+
+        // Function to Add Location
+        function addLocation() {
+            const location = locationInput.value.trim();
+            if (location !== "") {
+                // Check if location already exists
+                if (!locationsArray.includes(location.toLowerCase())) {
+                    locationsArray.push(location.toLowerCase());
+                    locationInput.value = "";
+                    updateLocationsList();
+                    updateMap(location.toLowerCase());
+                } else {
+                    alert("This location is already in your list!");
+                }
+            }
+        }
+
+        // Function to Update Locations List
+        function updateLocationsList() {
+            locationsList.innerHTML = "";
+            locationsArray.forEach((location) => {
+                const li = document.createElement("li");
+                // Capitalize first letter of each word
+                const displayLocation = location.split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                    
+                li.textContent = displayLocation;
+                li.addEventListener("click", () => updateMap(location));
+                locationsList.appendChild(li);
+            });
+        }
+
+        // Function to Update Map
+        function updateMap(location) {
+            const coordinates = getCoordinatesForLocation(location);
+            if (coordinates) {
+                // Clear existing markers
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                // Add new marker
+                const marker = L.marker(coordinates).addTo(map);
+                marker.bindPopup(`<b>${location.charAt(0).toUpperCase() + location.slice(1)}</b>`).openPopup();
+                markers.push(marker);
+                
+                // Center map on marker
+                map.setView(coordinates, 8);
+            } else {
+                alert("Location not found or coordinates not available.");
+            }
+        }
+
+        // Function to Get Coordinates for a Location
+        function getCoordinatesForLocation(location) {
+            const locationCoordinates = {
+                "philippines": [13.41, 122.56],
+                "taiwan": [23.697809, 120.960518],
+                "manila": [14.599512, 120.984222],
+                "iloilo": [10.720150, 122.562103],
+                "cebu": [10.3157, 123.8854],
+                "davao": [7.1907, 125.4553],
+                "palawan": [9.8349, 118.7384],
+                "baguio": [16.4023, 120.5960],
+                "boracay": [11.9804, 121.9189],
+                "siargao": [9.8482, 126.0458],
+                "oton": [10.6925, 122.4738],
+                // Add more locations here
+            };
+
+            return locationCoordinates[location.toLowerCase()];
+        }
+    </script>
+</body>
+</html>
